@@ -90,7 +90,7 @@ class TrainModel:
         """
         Save the current model in the folder as h5 file and a model architecture summary as png
         """
-        torch.save(self.currentNetwork.state_dict(), os.path.join(path, 'trained_model.h5'))
+        torch.save(self._model, os.path.join(path, 'trained_model.h5'))
         # self._model.save(os.path.join(path, 'trained_model.h5'))
         # plot_model(self._model, to_file=os.path.join(path, 'model_structure.png'), show_shapes=True, show_layer_names=True)
 
@@ -114,6 +114,7 @@ class TestModel:
     def __init__(self, input_dim, model_path):
         self._input_dim = input_dim
         self._model = self._load_my_model(model_path)
+        self._model.eval()
 
 
     def _load_my_model(self, model_folder_path):
@@ -123,7 +124,7 @@ class TestModel:
         model_file_path = os.path.join(model_folder_path, 'trained_model.h5')
         
         if os.path.isfile(model_file_path):
-            loaded_model = load_model(model_file_path)
+            loaded_model = torch.load(model_file_path)
             return loaded_model
         else:
             sys.exit("Model number not found")
@@ -133,8 +134,11 @@ class TestModel:
         """
         Predict the action values from a single state
         """
-        state = np.reshape(state, [1, self._input_dim])
-        return self._model.predict(state)
+        with torch.no_grad():
+            state: torch.Tensor = torch.tensor(state).float().to(device)
+            prediction = self._model(state).detach().to(cpu_device).numpy()
+        return prediction
+
 
 
     @property
