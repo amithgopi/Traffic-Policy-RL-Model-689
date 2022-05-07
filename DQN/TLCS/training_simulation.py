@@ -54,7 +54,7 @@ class Simulation:
         old_total_wait = 0
         old_state = -1
         old_action = -1
-
+        self._Memory.clear()
         while self._step < self._max_steps:
 
             # get current state of the intersection
@@ -62,6 +62,7 @@ class Simulation:
 
             # calculate reward of previous action: (change in cumulative waiting time between actions)
             # waiting time = seconds waited by a car since the spawn in the environment, cumulated for every car in incoming lanes
+            # TODO can this be made +ve??
             current_total_wait = self._collect_waiting_times()
             reward = old_total_wait - current_total_wait
 
@@ -70,8 +71,7 @@ class Simulation:
                 self._Memory.add_sample((old_state, old_action, reward, current_state))
 
             # choose the light phase to activate, based on the current state of the intersection
-            action = self._choose_action(current_state, epsilon)
-
+            action = self._Model.select_action(current_state)
             # if the chosen phase is different from the last phase, activate the yellow phase
             if self._step != 0 and old_action != action:
                 self._set_yellow_phase(old_action)
@@ -97,8 +97,8 @@ class Simulation:
 
         print("Training...")
         start_time = timeit.default_timer()
-        for _ in range(self._training_epochs):
-            self._replay()
+        # for _ in range(self._training_epochs):
+        self._replay()
         training_time = round(timeit.default_timer() - start_time, 1)
 
         return simulation_time, training_time
@@ -138,14 +138,14 @@ class Simulation:
         return total_waiting_time
 
 
-    def _choose_action(self, state, epsilon):
-        """
-        Decide wheter to perform an explorative or exploitative action, according to an epsilon-greedy policy
-        """
-        if random.random() < epsilon:
-            return random.randint(0, self._num_actions - 1) # random action
-        else:
-            return np.argmax(self._Model.predict_one(state)) # the best action given the current state
+    # def _choose_action(self, state, epsilon):
+    #     """
+    #     Decide wheter to perform an explorative or exploitative action, according to an epsilon-greedy policy
+    #     """
+    #     if random.random() < epsilon:
+    #         return random.randint(0, self._num_actions - 1) # random action
+    #     else:
+    #         return np.argmax(self._Model.predict_one(state)) # the best action given the current state
 
 
     def _set_yellow_phase(self, old_action):
@@ -256,29 +256,32 @@ class Simulation:
         """
         Retrieve a group of samples from the memory and for each of them update the learning equation, then train
         """
-        batch = self._Memory.get_samples(self._Model.batch_size)
+        # batch = self._Memory.get_samples(self._Model.batch_size)
+        batch = self._Memory.samples
 
         if len(batch) > 0:  # if the memory is full enough
             states = np.array([val[0] for val in batch])  # extract states from the batch
             next_states = np.array([val[3] for val in batch])  # extract next states from the batch
             actions = np.array([val[1] for val in batch])
+            rewards = np.array([val[2] for val in batch])
 
+            self._Model.train(states, actions, next_states, rewards)
             # prediction
-            q_s_a = self._Model.predict_batch(states)  # predict Q(state), for every sample
-            q_s_a_d = self._Model.predict_batch(next_states)  # predict Q(next_state), for every sample
+            # q_s_a = self._Model.predict_batch(states)  # predict Q(state), for every sample
+            # q_s_a_d = self._Model.predict_batch(next_states)  # predict Q(next_state), for every sample
 
-            # setup training arrays
-            x = np.zeros((len(batch), self._num_states))
-            y = np.zeros((len(batch)))
+            # # setup training arrays
+            # x = np.zeros((len(batch), self._num_states))
+            # y = np.zeros((len(batch)))
 
-            for i, b in enumerate(batch):
-                state, action, reward, _ = b[0], b[1], b[2], b[3]  # extract data from one sample
-                current_q = q_s_a[i]  # get the Q(state) predicted before
-                current_q[action] = reward + self._gamma * np.amax(q_s_a_d[i])  # update Q(state, action)
-                x[i] = state
-                y[i] = current_q[action]  # Q(state) that includes the updated action value
+            # for i, b in enumerate(batch):
+            #     state, action, reward, _ = b[0], b[1], b[2], b[3]  # extract data from one sample
+            #     current_q = q_s_a[i]  # get the Q(state) predicted before
+            #     current_q[action] = reward + self._gamma * np.amax(q_s_a_d[i])  # update Q(state, action)
+            #     x[i] = state
+            #     y[i] = current_q[action]  # Q(state) that includes the updated action value
 
-            self._Model.train_batch(x, y, actions)  # train the NN
+            # self._Model.train_batch(x, y, actions)  # train the NN
 
 
     def _save_episode_stats(self):

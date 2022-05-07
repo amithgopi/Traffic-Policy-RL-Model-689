@@ -119,7 +119,7 @@ class Simulation:
         """
         Pick the best action known based on the current state of the env
         """
-        return np.argmax(self._Model.predict_one(state))
+        return self._Model.select_action(state)
 
 
     def _set_yellow_phase(self, old_action):

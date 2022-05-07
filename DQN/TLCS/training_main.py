@@ -23,7 +23,8 @@ if __name__ == "__main__":
         config['num_layers'], 
         config['width_layers'], 
         config['batch_size'], 
-        config['learning_rate'], 
+        config['learning_rate'],
+        config['gamma'], 
         input_dim=config['num_states'], 
         output_dim=config['num_actions']
     )
