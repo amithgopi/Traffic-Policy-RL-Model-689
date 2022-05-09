@@ -97,7 +97,7 @@ class TrainModel:
         returns.reverse()
         return torch.tensor(returns)
     
-    def estimate_critic_loss(self, returns, log_policies, values, masks):
+    def estimate_actor_loss(self, returns, log_policies, values, masks):
         # traj_indexes = [-1] + [idx for idx in range(len(masks)) if masks[idx] == 0]
         trajectoryCount = len(masks) - np.count_nonzero(masks)
 
@@ -125,9 +125,9 @@ class TrainModel:
         log_policies = self.policy_model.get_log_prob(states, actions)
         values = self._model(states)
 
-        critic_loss = self.estimate_critic_loss(returns, log_policies, values, masks)
+        actor_loss = self.estimate_actor_loss(returns, log_policies, values, masks)
         # print("ret-val", returns.size(), values.size(), (returns - values).pow(2).size())
-        actor_loss = (returns - values).pow(2).mean()
+        critic_loss = (returns - values).pow(2).mean()
         print(critic_loss, actor_loss)
         self.optimizer_policy.zero_grad()
         self.optimizer_value.zero_grad()
