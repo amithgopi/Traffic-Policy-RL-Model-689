@@ -2,23 +2,6 @@
 
 A framework where a deep Q-Learning Reinforcement Learning agent tries to choose the correct traffic light phase at an intersection to maximize traffic efficiency.
 
-I have uploaded this here to help anyone searching for a good starting point for deep reinforcement learning with SUMO. This code is extracted from my master thesis, and it represents a simplified version of the code used for my thesis work. I hope you can find this repository useful for your project.
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine. In my opinion, the following are the easiest steps in order to run the algorithm from scratch, with the least amount of effort. A computer with an NVIDIA GPU is strongly recommended.
-
-1. Download Anaconda ([official site](https://www.anaconda.com/distribution/#download-section)) and install.
-2. Download SUMO ([official site](https://www.dlr.de/ts/en/desktopdefault.aspx/tabid-9883/16931_read-41000/)) and install.
-3. Follow [this](https://towardsdatascience.com/tensorflow-gpu-installation-made-easy-use-conda-instead-of-pip-52e5249374bc) short guide to install tensorflow-gpu correctly and problem-free. In short, the guide tells you to open Anaconda Prompt, or any terminal, and type the following commands:
-```
-conda create --name tf_gpu
-activate tf_gpu
-conda install tensorflow-gpu
-```
-
-I've used the following software versions: Python 3.7, SUMO traffic simulator 1.2.0, tensorflow 2.0
-
 ## Running the algorithm
 
 1. Clone or download the repo.
@@ -108,33 +91,6 @@ The settings used during the testing and contained in the file **testing_setting
 - **Reward**: change in *cumulative waiting time* between actions, where the waiting time of a car is the number of seconds spent with speed=0 since the spawn; *cumulative* means that every waiting time of every car located in an incoming lane is summed. When a car leaves an oncoming lane (i.e. crossed the intersection), its waiting time is no longer counted. Therefore this translates to a positive reward for the agent.
 - **Learning mechanism**: the agent make use of the Q-learning equation *Q(s,a) = reward + gamma • max Q'(s',a')* to update the action values and a deep neural network to learn the state-action function. The neural network is fully connected with 80 neurons as input (the state), 5 hidden layers of 400 neurons each, and the output layers with 4 neurons representing the 4 possible actions. Also, an experience replay mechanism is implemented: the experience of the agent is stored in a memory and, at the end of each episode, multiple batches of randomized samples are extracted from the memory and used to train the neural network, once the action values have been updated with the Q-learning equation.
 
-## *Changelog - New version, updated on 12 Jan 2020*
 
-- *Each training result is now stored in a folder structure, with each result being numbered with an increasing integer.*
-- *New Test Mode: test the model versions you created by running a test episode with comparable results.*
-- *Enabled a dynamic creation of the model by specifying, for each training, the width and the depth of the feedforward neural network that will be used.*
-- *The neural network training is now executed at the end of each episode, instead of during the episode. This improves the overall speed of the algorithm.*
-- *The code for the neural network is now written using Keras and Tensorflow 2.0.*
-- *Added a settings file (.ini) for both training and testing.*
-- *Added a minimum number of samples required into the memory to begin training.*
-- *Improved code readability.*
-
-## Author
-
-* **Andrea Vidali** - *University of Milano-Bicocca*
-
-If you need further information about the algorithm, I suggest you open an issue on the issues page.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Buy me a coffee!
-
-Hi 👋 My name is Andrea.
-
-If this repo helped you in some way and you want to say thanks, consider buying me a coffee!
-
-<a href="https://www.buymeacoffee.com/andreavidali" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
  
 
